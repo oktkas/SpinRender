@@ -19,6 +19,7 @@ All notable changes to SpinRender are documented here. Format is based on
 ### 🐛 Fixes
 - MP4 and GIF renders were assembled at 25 fps, silently dropping one rendered frame in six. All rendered frames are now used (30 fps).
 - PNG sequences now use the Background color like MP4 and GIF instead of always being transparent. Tick **Transparent** to keep the previous see-through frames.
+- Fixed a single upside-down frame in spins whose axis is tilted (e.g. Spin Tilt 90°) when the spin passes exactly 90°, visible as a glitch in the loop.
 - The preview now frames the board the same way the final render does. Previously components overhanging the board edge or tall parts could shift the preview off-centre, and squarer boards appeared smaller in the preview than in the render.
 
 ## [0.9.1] - 2026-10-02
