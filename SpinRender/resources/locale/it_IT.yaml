@@ -285,7 +285,7 @@ locale:
       format:
         label: "Formato"
         desc: "Formato video o sequenza immagini"
-        options: ["MP4 (H.264)", "GIF", "Sequenza PNG"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "Sequenza PNG"]
       hide_vias:
         label: "VIA"
       hide_components:

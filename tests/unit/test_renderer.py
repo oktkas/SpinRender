@@ -3,6 +3,8 @@ import struct
 import subprocess
 from unittest.mock import Mock
 
+import pytest
+
 from SpinRender.core.renderer import (
     RenderEngine,
     _prepare_kicad_config_home,
@@ -430,6 +432,54 @@ def test_assemble_gif_transparent_keeps_alpha(monkeypatch, tmp_path):
     assert 'color=' not in palette_graph and 'color=' not in gif_graph
     assert 'palettegen=reserve_transparent=1' in palette_graph
     assert 'paletteuse=alpha_threshold=128' in gif_graph
+
+
+def test_assemble_webp_composites_background(monkeypatch, tmp_path):
+    _write_png_header(tmp_path / 'frame0000.png', 800, 800)
+    engine = RenderEngine('/tmp/example.kicad_pcb', {'resolution': '800x800', 'bg_color': '#123456'})
+    cmds = _capture_assembly_cmds(monkeypatch)
+
+    engine.assemble_webp(str(tmp_path), str(tmp_path / 'out.webp'), 1)
+
+    assert len(cmds) == 1
+    assert 'color=c=#123456:s=800x800:r=30[bg]' in _filter_graph(cmds[0])
+    assert cmds[0][cmds[0].index('-c:v') + 1] == 'libwebp_anim'
+    assert cmds[0][cmds[0].index('-loop') + 1] == '0'
+
+
+def test_assemble_webp_transparent_keeps_alpha(monkeypatch, tmp_path):
+    _write_png_header(tmp_path / 'frame0000.png', 800, 800)
+    engine = RenderEngine('/tmp/example.kicad_pcb', {'resolution': '800x800', 'transparent_bg': True})
+    cmds = _capture_assembly_cmds(monkeypatch)
+
+    engine.assemble_webp(str(tmp_path), str(tmp_path / 'out.webp'), 1)
+
+    graph = _filter_graph(cmds[0])
+    assert 'color=' not in graph
+    assert 'yuva420p' in graph
+
+
+def test_assemble_webp_reports_missing_encoder(monkeypatch, tmp_path):
+    def failing_process(cmd, **kwargs):
+        proc = Mock()
+        proc.communicate.return_value = ("Unknown encoder 'libwebp_anim'", None)
+        proc.returncode = 1
+        return proc
+
+    monkeypatch.setattr('SpinRender.core.renderer.find_command', lambda _: '/usr/bin/ffmpeg')
+    monkeypatch.setattr('SpinRender.core.renderer._start_text_process', failing_process)
+    engine = RenderEngine('/tmp/example.kicad_pcb', {'resolution': '800x800'})
+
+    with pytest.raises(RuntimeError, match='no libwebp encoder'):
+        engine.assemble_webp(str(tmp_path), str(tmp_path / 'out.webp'), 1)
+
+
+def test_output_path_uses_webp_extension(tmp_path):
+    engine = RenderEngine(str(tmp_path / 'board.kicad_pcb'), {
+        'format': 'webp', 'output_auto': False, 'output_path': str(tmp_path),
+    })
+
+    assert engine.get_output_path() == str(tmp_path / 'board.webp')
 
 
 def test_assemble_mp4_ignores_transparent_bg(monkeypatch, tmp_path):

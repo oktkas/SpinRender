@@ -50,6 +50,7 @@ def test_sync_background_controls_greys_out_what_does_not_apply():
     # (toggle enabled, colour picker enabled)
     assert _sync_background('gif', False) == (True, True)
     assert _sync_background('gif', True) == (True, False)
+    assert _sync_background('webp', True) == (True, False)
     assert _sync_background('png_sequence', True) == (True, False)
     # MP4 has no alpha: toggle unavailable, colour always used
     assert _sync_background('mp4', True) == (False, True)

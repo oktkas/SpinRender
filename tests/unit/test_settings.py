@@ -372,7 +372,7 @@ def test_render_settings_transparent_bg_round_trip():
     assert recreated.transparent_bg is True
 
 
-@pytest.mark.parametrize("fmt, expected", [('gif', True), ('png_sequence', True), ('mp4', False)])
+@pytest.mark.parametrize("fmt, expected", [('gif', True), ('webp', True), ('png_sequence', True), ('mp4', False)])
 def test_render_settings_transparent_output_depends_on_format(fmt, expected):
     """MP4 has no alpha channel, so it never produces a transparent output."""
     assert RenderSettings(transparent_bg=True, format=fmt).transparent_output() is expected

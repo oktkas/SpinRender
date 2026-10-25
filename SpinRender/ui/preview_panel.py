@@ -55,7 +55,7 @@ class PreviewPanel(wx.Panel):
         self.is_rendering = False  # set by controller
         self.current_render_frame: Optional[int] = None
         self.total_render_frames: Optional[int] = None
-        self.final_output_type: Optional[str] = None  # 'mp4' or 'gif'
+        self.final_output_type: Optional[str] = None  # 'mp4', 'gif' or 'webp'
         self.render_preview_bitmap: Optional[wx.Bitmap] = None
         self.last_frame_dir: Optional[str] = None
 

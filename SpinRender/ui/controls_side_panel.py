@@ -791,8 +791,8 @@ class ControlsSidePanel(wx.Panel):
         f_head_sizer.Add((0, self.FromDIP(head_h)))
         f_sizer.Add(f_head_sizer, 0, wx.EXPAND | wx.BOTTOM, self.FromDIP(6))
 
-        self.format_choices = ["MP4 (H.264)", "GIF", "PNG Sequence"]
-        self.format_ids = ["mp4", "gif", "png_sequence"]
+        self.format_choices = ["MP4 (H.264)", "GIF", "WebP", "PNG Sequence"]
+        self.format_ids = ["mp4", "gif", "webp", "png_sequence"]
         self.format_choice = CustomDropdown(f_col, choices=self.format_choices, size=(-1, 32), id="format", section='output')
         curr_fmt = self.settings.format
         fmt_idx = self.format_ids.index(curr_fmt) if curr_fmt in self.format_ids else 0

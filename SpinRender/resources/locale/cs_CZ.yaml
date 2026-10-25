@@ -285,7 +285,7 @@ locale:
       format:
         label: "Formát"
         desc: "Formát videa nebo sekvence snímků"
-        options: ["MP4 (H.264)", "GIF", "Sekvence PNG"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "Sekvence PNG"]
       hide_vias:
         label: "PROKOPY (VIAS)"
       hide_components:

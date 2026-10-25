@@ -285,7 +285,7 @@ locale:
       format:
         label: "Formátum"
         desc: "Videó vagy képsorozat"
-        options: ["MP4 (H.264)", "GIF", "PNG sorozat"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "PNG sorozat"]
       hide_vias:
         label: "VIAK"
       hide_components:

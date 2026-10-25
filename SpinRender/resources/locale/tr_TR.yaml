@@ -285,7 +285,7 @@ locale:
       format:
         label: "Format"
         desc: "Video veya görüntü dizisi formatı"
-        options: ["MP4 (H.264)", "GIF", "PNG Dizisi"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "PNG Dizisi"]
       hide_vias:
         label: "VİALAR"
       hide_components:

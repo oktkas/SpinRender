@@ -633,6 +633,8 @@ class RenderEngine:
                 self.assemble_mp4(temp_dir, output_path, frame_count)
             elif format_type == 'gif':
                 self.assemble_gif(temp_dir, output_path, frame_count)
+            elif format_type == 'webp':
+                self.assemble_webp(temp_dir, output_path, frame_count)
             elif format_type == 'png_sequence':
                 self.assemble_png_sequence(temp_dir, output_path, frame_count)
                 out_dir = os.path.dirname(output_path)
@@ -997,6 +999,57 @@ class RenderEngine:
             logger.error(f"GIF assembly error: {e}")
             raise RuntimeError("GIF assembly failed.")
 
+    def assemble_webp(self, frame_dir, output_path, frame_count):
+        """
+        Assemble frames into an animated WebP using ffmpeg's libwebp_anim.
+        Much smaller than GIF, with full colour and 8-bit alpha.
+        """
+        ffmpeg = find_command('ffmpeg')
+        if not ffmpeg:
+            raise RuntimeError("ffmpeg not found in PATH or common locations")
+
+        bg_hex = self.settings.get('bg_color', '#000000')
+        if bg_hex == 'opaque': bg_hex = '#000000'
+
+        w, h = self._canvas_size(frame_dir)
+
+        # Transparent: keep the frames' alpha. Otherwise composite onto the background.
+        if self.settings.get('transparent_bg', False):
+            graph = '[0:v]format=yuva420p[out]'
+        else:
+            graph = f'color=c={bg_hex}:s={w}x{h}:r=30[bg];[bg][0:v]overlay=shortest=1[ov];[ov]format=yuv420p[out]'
+
+        cmd = [
+            ffmpeg, '-y', '-framerate', '30',
+            '-i', os.path.join(frame_dir, 'frame%04d.png'),
+            '-filter_complex', graph,
+            '-map', '[out]',
+            '-c:v', 'libwebp_anim',
+            '-lossless', '0',
+            '-quality', '75',
+            '-compression_level', '6',
+            '-preset', 'picture',
+            '-loop', '0',
+            output_path
+        ]
+
+        logger.info(f"Assembling WebP: {output_path}")
+        logger.debug(f"WEBP CMD: {' '.join(cmd)}")
+        try:
+            process = _start_text_process(cmd)
+            stdout, _ = process.communicate(timeout=300)
+            if logger.isEnabledFor(logging.DEBUG):
+                for line in stdout.splitlines():
+                    logger.debug(f"  [ffmpeg-webp] {line.strip()}")
+            if process.returncode != 0:
+                if 'libwebp' in (stdout or ''):
+                    raise RuntimeError("WebP assembly failed: this ffmpeg build has no libwebp encoder")
+                raise RuntimeError(f"WebP assembly failed with code {process.returncode}")
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+            raise RuntimeError("WebP assembly timed out")
+
     def assemble_png_sequence(self, frame_dir, output_path, frame_count):
         """
         Write the PNG sequence to the output directory.
@@ -1077,7 +1130,7 @@ class RenderEngine:
             else:
                 output_path = os.path.join(output_base, board_name)
         else:
-            ext = 'mp4' if format_type == 'mp4' else 'gif'
+            ext = format_type if format_type in ('mp4', 'webp') else 'gif'
             output_path = os.path.join(output_base, f"{board_name}.{ext}")
 
         return output_path

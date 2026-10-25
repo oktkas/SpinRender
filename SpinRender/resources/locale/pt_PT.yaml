@@ -285,7 +285,7 @@ locale:
       format:
         label: "Formato"
         desc: "Formato de vídeo ou sequência de imagens"
-        options: ["MP4 (H.264)", "GIF", "Sequência PNG"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "Sequência PNG"]
       hide_vias:
         label: "VIAS"
       hide_components:

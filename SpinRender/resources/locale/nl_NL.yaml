@@ -285,7 +285,7 @@ locale:
       format:
         label: "Formaat"
         desc: "Video of beeldreeks formaat"
-        options: ["MP4 (H.264)", "GIF", "PNG Reeks"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "PNG Reeks"]
       hide_vias:
         label: "VIA'S"
       hide_components:

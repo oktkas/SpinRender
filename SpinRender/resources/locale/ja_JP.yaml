@@ -285,7 +285,7 @@ locale:
       format:
         label: "フォーマット"
         desc: "ビデオまたは連番画像"
-        options: ["MP4 (H.264)", "GIF", "PNG連番画像"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "PNG連番画像"]
       hide_vias:
         label: "ビア"
       hide_components:

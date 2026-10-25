@@ -285,7 +285,7 @@ locale:
       format:
         label: "Định dạng"
         desc: "Định dạng video hoặc chuỗi hình ảnh"
-        options: ["MP4 (H.264)", "GIF", "Chuỗi PNG"]
+        options: ["MP4 (H.264)", "GIF", "WebP", "Chuỗi PNG"]
       hide_vias:
         label: "VIAS"
       hide_components:
