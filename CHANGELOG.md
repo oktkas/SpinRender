@@ -9,11 +9,12 @@ All notable changes to SpinRender are documented here. Format is based on
 - **Manual:** download the release's `sr-pcm-XYZ.zip` and install via PCM's
   "Install from File…", or use `install.sh` / `install.bat` from a clone.
 
-## [Unreleased]
+## [0.10.0] - 2026-11-21
 
 ### ✨ New features
+- Added **Pan X** and **Pan Y** below Zoom to move the board in the frame throughout the loop. The controls update the live preview and the export, and their values are saved with presets. An explicit `--pan` in Advanced Options takes precedence on export.
 - Added a **Zoom** control to set how large the board appears in the frame (0.1× to 5×, default 0.8× matches previous renders). Scroll over the preview to zoom; scrolling over a finished render dismisses it. Zoom is saved with presets. Thanks [@shubham0x13](https://github.com/shubham0x13)!
-- Added a **Transparent** option next to Background color. GIF and PNG sequence renders keep a see-through background, so they blend into light and dark pages alike (e.g. GitHub READMEs). The preview shows a checkerboard while it is on. MP4 has no transparency, so the option is unavailable there. GIF transparency is all-or-nothing per pixel, so board edges are not anti-aliased against the page.
+- Added a **Transparent** option next to Background color for GIF, WebP, and PNG sequence exports. The preview shows a checkerboard when transparency is enabled. GIF pixels are fully opaque or fully transparent.
 - Added **WebP** output (animated, looping). It is typically 2–4× smaller than the equivalent GIF, with full colour and smooth (8-bit) transparency, which makes it a better fit for GitHub/GitLab READMEs. Requires an ffmpeg build with libwebp (most builds have it).
 
 ### 🐛 Fixes
@@ -21,6 +22,8 @@ All notable changes to SpinRender are documented here. Format is based on
 - PNG sequences now use the Background color like MP4 and GIF instead of always being transparent. Tick **Transparent** to keep the previous see-through frames.
 - Fixed a single upside-down frame in spins whose axis is tilted (e.g. Spin Tilt 90°) when the spin passes exactly 90°, visible as a glitch in the loop.
 - The preview now frames the board the same way the final render does. Previously components overhanging the board edge or tall parts could shift the preview off-centre, and squarer boards appeared smaller in the preview than in the render.
+
+**Full changelog:** https://github.com/oktkas/SpinRender/compare/v0.9.1...v0.10.0
 
 ## [0.9.1] - 2026-10-02
 
