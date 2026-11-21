@@ -245,6 +245,8 @@ class PreviewPanel(wx.Panel):
         self.viewport.set_render_mode(getattr(self.settings, 'render_mode', 'both'))
         if hasattr(self.viewport, 'set_zoom'):
             self.viewport.set_zoom(getattr(self.settings, 'zoom', DEFAULT_ZOOM))
+        if hasattr(self.viewport, 'set_pan'):
+            self.viewport.set_pan(getattr(self.settings, 'pan_x', 0.0), getattr(self.settings, 'pan_y', 0.0))
         
         # Defer background color until model is loaded
         self.viewport.on_model_loaded = self._on_model_ready
@@ -575,6 +577,12 @@ class PreviewPanel(wx.Panel):
         """Update viewport camera zoom."""
         if getattr(self, 'viewport', None) and hasattr(self.viewport, 'set_zoom'):
             self.viewport.set_zoom(zoom)
+        self.update_preview_overlay()
+
+    def set_pan(self, x: float, y: float):
+        """Update viewport framing."""
+        if getattr(self, 'viewport', None) and hasattr(self.viewport, 'set_pan'):
+            self.viewport.set_pan(x, y)
         self.update_preview_overlay()
 
     def reload_model(self):

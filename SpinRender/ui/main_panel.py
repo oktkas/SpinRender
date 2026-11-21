@@ -15,7 +15,7 @@ _locale = Locale.current()
 from .preview_panel import PreviewPanel
 
 # Import RenderSettings
-from SpinRender.core.settings import RenderSettings
+from SpinRender.core.settings import PAN_AXES, RenderSettings
 from SpinRender.core.board_workspace import BoardWorkspace
 from .preset_controller import PresetController
 from SpinRender.core.render_controller import RenderController
@@ -114,7 +114,7 @@ class SpinRenderPanel(wx.Panel):
             if isinstance(last_settings, RenderSettings):
                 # Update individual attributes
                 for field in ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading',
-                              'period', 'direction', 'lighting', 'bg_color',
+                              'zoom', *PAN_AXES, 'period', 'direction', 'lighting', 'bg_color',
                               'render_mode', 'format', 'resolution', 'custom_resolutions',
                               'preset', 'logging_level', 'easing', 'output_auto', 'output_path',
                               'cli_overrides', 'theme_mode', 'params_collapsed',
@@ -229,7 +229,12 @@ class SpinRenderPanel(wx.Panel):
         """Collect control references and instantiate PresetController."""
         # Controls are now on self.controls_side_panel
         csp = self.controls_side_panel
+        pan_controls = {
+            f'{axis}_{kind}': getattr(csp, f'{axis}_{kind}', None)
+            for axis in PAN_AXES for kind in ('slider', 'input')
+        }
         controls = {
+            **pan_controls,
             'preset_buttons': getattr(csp, 'preset_buttons', {}),
             'bg_picker': getattr(csp, 'bg_picker', None),
             'board_tilt_slider': getattr(csp, 'board_tilt_slider', None),
@@ -260,6 +265,7 @@ class SpinRenderPanel(wx.Panel):
 
         # Extract additional controls for parameter controller
         param_controls = {
+            **pan_controls,
             'board_tilt_slider': csp.board_tilt_slider,
             'board_tilt_input': csp.board_tilt_input,
             'board_roll_slider': csp.board_roll_slider,
@@ -336,6 +342,11 @@ class SpinRenderPanel(wx.Panel):
             self.controls_side_panel.zoom_slider.Bind(wx.EVT_SLIDER, pc.on_zoom_change)
         if getattr(self.controls_side_panel, 'zoom_input', None):
             self.controls_side_panel.zoom_input.Bind(wx.EVT_TEXT_ENTER, pc.on_zoom_input_change)
+        for axis in PAN_AXES:
+            slider = getattr(self.controls_side_panel, f'{axis}_slider')
+            numeric_input = getattr(self.controls_side_panel, f'{axis}_input')
+            slider.Bind(wx.EVT_SLIDER, lambda event, axis=axis: pc.on_pan_change(axis))
+            numeric_input.Bind(wx.EVT_TEXT_ENTER, lambda event, axis=axis: pc.on_pan_change(axis, from_input=True))
         # Period
         self.controls_side_panel.period_slider.Bind(wx.EVT_SLIDER, pc.on_period_change)
         self.controls_side_panel.period_input.Bind(wx.EVT_TEXT_ENTER, pc.on_period_input_change)

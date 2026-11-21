@@ -6,6 +6,8 @@ from typing import List
 DEFAULT_ZOOM = 0.8
 MIN_ZOOM = 0.1
 MAX_ZOOM = 5.0
+MAX_PAN = 4.0
+PAN_AXES = ('pan_x', 'pan_y')
 
 
 @dataclass
@@ -38,6 +40,8 @@ class RenderSettings:
     theme_mode: str = 'system'
     params_collapsed: bool = True
     output_collapsed: bool = False
+    pan_x: float = 0.0
+    pan_y: float = 0.0
 
     def __post_init__(self):
         """Validate settings after initialization."""
@@ -53,6 +57,10 @@ class RenderSettings:
             raise ValueError(f"period must be positive, got {self.period}")
         if not MIN_ZOOM <= self.zoom <= MAX_ZOOM:
             raise ValueError(f"zoom must be between {MIN_ZOOM} and {MAX_ZOOM}, got {self.zoom}")
+        for axis in PAN_AXES:
+            value = getattr(self, axis)
+            if not -MAX_PAN <= value <= MAX_PAN:
+                raise ValueError(f"{axis} must be between {-MAX_PAN} and {MAX_PAN}, got {value}")
 
     def transparent_output(self) -> bool:
         """True when the output keeps the transparent background (MP4 has no alpha)."""

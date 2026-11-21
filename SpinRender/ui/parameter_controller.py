@@ -183,6 +183,17 @@ class ParameterController:
         self.preset_controller.check_preset_match(manual_change=True)
         self.schedule_save()
 
+    def on_pan_change(self, axis, *, from_input=False):
+        slider = self.controls[f'{axis}_slider']
+        numeric_input = self.controls[f'{axis}_input']
+        source, target = (numeric_input, slider) if from_input else (slider, numeric_input)
+        value = round(float(source.GetValue()), 2)
+        setattr(self.settings, axis, value)
+        target.SetValue(value)
+        self.preview.set_pan(self.settings.pan_x, self.settings.pan_y)
+        self.preset_controller.check_preset_match(manual_change=True)
+        self.schedule_save()
+
     # Period handler
     def on_period_change(self, event):
         val = round(float(self.period_slider.GetValue()), 1)

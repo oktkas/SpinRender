@@ -258,6 +258,10 @@ locale:
         label: "Přiblížení"
         desc: "Měřítko desky v záběru"
         unit: "x"
+      pan:
+        label: "Poloha v záběru"
+        x: "Posun X"
+        y: "Posun Y"
       period:
         label: "Perioda rotace"
         desc: "Doba jedné plné otáčky 360°"

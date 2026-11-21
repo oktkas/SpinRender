@@ -85,6 +85,29 @@ def test_generate_frames_uses_custom_zoom(monkeypatch, tmp_path):
     assert cmd[cmd.index('--zoom') + 1] == '1.25'
 
 
+@pytest.mark.parametrize(('pan', 'override', 'expected'), [
+    ((0, 0), '', []),
+    ((-0.75, 0.9), '', ['--pan', '-0.75,0.9,0']),
+    ((-0.75, 0.9), '--pan 1,2,3', ['--pan', '1,2,3']),
+])
+def test_generate_frames_applies_same_pan_to_every_angle(monkeypatch, tmp_path, pan, override, expected):
+    engine = RenderEngine('/tmp/example.kicad_pcb', {
+        'period': 0.1, 'pan_x': pan[0], 'pan_y': pan[1], 'cli_overrides': override,
+    })
+    process = Mock(returncode=0)
+    process.communicate.return_value = ('ok\n', None)
+    start = Mock(return_value=process)
+    monkeypatch.setattr('SpinRender.core.renderer.find_command', lambda _: '/usr/bin/kicad-cli')
+    monkeypatch.setattr('SpinRender.core.renderer._start_text_process', start)
+    monkeypatch.setattr('SpinRender.core.renderer._prepare_kicad_config_home', lambda _: str(tmp_path))
+
+    assert engine.generate_frames(str(tmp_path)) == 3
+    for call in start.call_args_list:
+        cmd = call.args[0]
+        actual = [part for i, arg in enumerate(cmd) if arg == '--pan' for part in cmd[i:i + 2]]
+        assert actual == expected
+
+
 def test_malformed_quality_override_does_not_block_crash_retry(monkeypatch, tmp_path):
     """A leftover/malformed override like "--quality-high" (issue #1) must not
     be mistaken for an intentional --quality override: it isn't a real

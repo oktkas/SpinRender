@@ -33,6 +33,9 @@ logger = logging.getLogger("SpinRender")
 # crop a few pixels smaller, but frames the camera for the full window).
 KICAD_FRAMING = 0.971
 KICAD_FOV_Y = 45.0
+# KiCad normalizes the longest board dimension to 8 units and applies --pan
+# in those units, in camera space before the board rotation.
+KICAD_BOARD_UNITS = 8.0
 # kicad-cli `export glb` names the board body geometry "<board>_PCB_<n>".
 PCB_GEOMETRY_TAG = "_PCB_"
 
@@ -191,6 +194,8 @@ class GLPreviewRenderer(glcanvas.GLCanvas):
 
         # Camera Zoom (synchronized with kicad-cli --zoom)
         self.zoom = DEFAULT_ZOOM
+        self.pan_x = 0.0
+        self.pan_y = 0.0
         self.on_zoom_callback = None
         # Optional predicate; wheel zoom is ignored while it returns False
         self.can_wheel_zoom = None
@@ -229,6 +234,12 @@ class GLPreviewRenderer(glcanvas.GLCanvas):
     def set_zoom(self, zoom: float):
         """Set camera zoom factor and redraw."""
         self.zoom = max(MIN_ZOOM, min(MAX_ZOOM, float(zoom)))
+        self.Refresh()
+
+    def set_pan(self, x: float, y: float):
+        """Set the view's horizontal and vertical framing offsets."""
+        self.pan_x = x
+        self.pan_y = y
         self.Refresh()
 
     def _on_destroy(self, event):
@@ -712,6 +723,8 @@ class GLPreviewRenderer(glcanvas.GLCanvas):
             glMatrixMode(GL_MODELVIEW)
             glLoadIdentity()
             gluLookAt(0, 0, cam_dist, 0, 0, 0, 0, 1, 0)
+            pan_scale = self.board_max_dim / KICAD_BOARD_UNITS
+            glTranslatef(self.pan_x * pan_scale, self.pan_y * pan_scale, 0)
 
             # Match kicad-cli rotation order: R_X(board_tilt) · R_spin · R_Z(board_roll)
             # In OpenGL, last specified = first applied to vertices (right-to-left).

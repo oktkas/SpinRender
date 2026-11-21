@@ -14,7 +14,7 @@ providing a focused interface for preset management.
 import wx
 from typing import Dict, Any, Optional
 
-from SpinRender.core.settings import DEFAULT_ZOOM, RenderSettings
+from SpinRender.core.settings import DEFAULT_ZOOM, PAN_AXES, RenderSettings
 from SpinRender.core.presets import PresetManager
 from SpinRender.core.locale import Locale
 _locale = Locale.current()
@@ -143,12 +143,14 @@ class PresetController:
                 self.preset_buttons['custom'].SetLabel(_locale.get("component.preset_card.card4.label", "SELECT CUSTOM"))
 
         # Determine keys to update
-        keys = ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'zoom', 'period', 'direction', 'lighting', 'bg_color']
+        keys = ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'zoom', *PAN_AXES, 'period', 'direction', 'lighting', 'bg_color']
         for k in keys:
             if hasattr(preset, k):
                 setattr(self.settings, k, getattr(preset, k))
             elif isinstance(preset, dict) and k in preset:
                 setattr(self.settings, k, preset[k])
+            elif k in PAN_AXES:
+                setattr(self.settings, k, 0.0)
 
         # Update background color control and viewport
         if hasattr(self.settings, 'bg_color') and self.bg_picker:
@@ -182,6 +184,12 @@ class PresetController:
             if self.zoom_input:
                 self.zoom_input.SetValue(self.settings.zoom)
 
+        for axis in PAN_AXES:
+            for kind in ('slider', 'input'):
+                control = self.controls.get(f'{axis}_{kind}')
+                if control:
+                    control.SetValue(getattr(self.settings, axis))
+
         if self.period_slider:
             p = self.settings.period
             self.period_slider.SetValue(p)
@@ -208,6 +216,8 @@ class PresetController:
             self.preview.viewport.set_lighting(self.settings.lighting)
             if hasattr(self.preview.viewport, 'set_zoom') and hasattr(self.settings, 'zoom'):
                 self.preview.viewport.set_zoom(self.settings.zoom)
+            if hasattr(self.preview.viewport, 'set_pan'):
+                self.preview.viewport.set_pan(self.settings.pan_x, self.settings.pan_y)
 
         self.preview.update_preview_overlay()
         self.check_preset_match(manual_change=False)
@@ -241,7 +251,7 @@ class PresetController:
             p_dict = p.to_dict() if hasattr(p, 'to_dict') else p
             is_match = all(
                 abs(getattr(self.settings, k, 0) - p_dict.get(k, 0)) < 0.01
-                for k in ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'period']
+                for k in ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'period', *PAN_AXES]
             )
             is_match = is_match and getattr(self.settings, 'direction', '') == p_dict.get('direction', '')
             is_match = is_match and getattr(self.settings, 'lighting', '') == p_dict.get('lighting', '')
@@ -264,7 +274,7 @@ class PresetController:
                 pd_dict = pd.to_dict() if hasattr(pd, 'to_dict') else pd
                 match = all(
                     abs(getattr(self.settings, k, 0) - pd_dict.get(k, 0)) < 0.01
-                    for k in ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'period']
+                    for k in ['board_tilt', 'board_roll', 'spin_tilt', 'spin_heading', 'period', *PAN_AXES]
                 )
                 match = match and getattr(self.settings, 'direction', '') == pd_dict.get('direction', '')
                 match = match and getattr(self.settings, 'lighting', '') == pd_dict.get('lighting', '')

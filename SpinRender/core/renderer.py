@@ -693,6 +693,8 @@ class RenderEngine:
         # real kicad-cli flag) doesn't get mistaken for one (issue #1).
         cli_overrides = self.settings.get('cli_overrides', '').strip()
         quality_overridden = '--quality' in cli_overrides.split()
+        pan_x = float(self.settings.get('pan_x', 0.0))
+        pan_y = float(self.settings.get('pan_y', 0.0))
 
         # Used to restore kicad-cli's cropped frames to the requested size
         ffmpeg = find_command('ffmpeg')
@@ -776,6 +778,9 @@ class RenderEngine:
             if cli_overrides:
                 cmd, override_tokens = _apply_overrides(cmd, cli_overrides)
                 cmd.extend(override_tokens)
+
+            if (pan_x or pan_y) and not any(t == '--pan' or t.startswith('--pan=') for t in cmd):
+                cmd.extend(['--pan', f'{pan_x:.4g},{pan_y:.4g},0'])
 
             cmd.extend(['-o', output_path, self.board_path])
 

@@ -1174,7 +1174,8 @@ class CustomInput(wx.Panel):
 
         self.type = _theme._resolve(f"{self.token}.type") or "text"
         self.case = _theme._resolve(f"{self.token}.case") or "none"
-        self.unit = kwargs.get('unit') or _theme._resolve(f"{self.token}.unit") or ""
+        unit = kwargs.get('unit')
+        self.unit = unit if unit is not None else _theme._resolve(f"{self.token}.unit") or ""
         self.prefix = kwargs.get('prefix') or _theme._resolve(f"{self.token}.prefix")
         if not isinstance(self.prefix, str) or self.prefix == "#FF00FF": self.prefix = ""
 

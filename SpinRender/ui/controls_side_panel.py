@@ -21,7 +21,7 @@ from .text_styles import TextStyle
 from .registry import ControlRegistry
 from SpinRender.core.theme import Theme
 from SpinRender.core.locale import Locale
-from SpinRender.core.settings import DEFAULT_ZOOM, MIN_ZOOM, MAX_ZOOM
+from SpinRender.core.settings import DEFAULT_ZOOM, MIN_ZOOM, MAX_ZOOM, MAX_PAN, PAN_AXES
 from SpinRender.version import get_version
 _theme = Theme.current()
 _locale = Locale.current()
@@ -524,6 +524,11 @@ class ControlsSidePanel(wx.Panel):
         )
         sizer.Add(row4, 0, wx.EXPAND | wx.BOTTOM, self.FromDIP(4))
 
+        self._align_axis_labels()
+        panel.SetSizerAndFit(sizer)
+        return panel
+
+    def _align_axis_labels(self):
         # Back-apply the final maximum label width to all axis label panels so
         # every slider in the group ends up with the same (minimum) width.
         final_label_width = getattr(self, '_max_axis_label_width', 0)
@@ -533,10 +538,7 @@ class ControlsSidePanel(wx.Panel):
         self._axis_label_parts = []
         self._max_axis_label_width = 0
 
-        panel.SetSizerAndFit(sizer)
-        return panel
-
-    def create_axis_control(self, parent, label_text, def_val, icon_name, min_val, max_val, locale_key=None, id="default"):
+    def create_axis_control(self, parent, label_text, def_val, icon_name, min_val, max_val, locale_key=None, id="default", unit="°"):
         """Create a labeled slider + numeric input row."""
         row = wx.Panel(parent)
         apply_transparent_background(row)
@@ -583,7 +585,7 @@ class ControlsSidePanel(wx.Panel):
         sizer.Add(slider, 1, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, self.FromDIP(10))
 
         # Numeric input with themed size (use component definition)
-        inp = create_numeric_input(row, f"{def_val:.2f}", "°", editable=True, min_val=min_val, max_val=max_val, id="axis", section='parameters')
+        inp = create_numeric_input(row, f"{def_val:.2f}", unit, editable=True, min_val=min_val, max_val=max_val, id="axis", section='parameters')
         sizer.Add(inp, 0, wx.ALIGN_CENTER_VERTICAL)
 
         attr_name = label_text.lower().replace(" ", "_")
@@ -621,6 +623,18 @@ class ControlsSidePanel(wx.Panel):
         csizer.Add(self.zoom_input, 0, wx.ALIGN_CENTER_VERTICAL)
         crow.SetSizerAndFit(csizer)
         sizer.Add(crow, 0, wx.EXPAND)
+
+        sizer.AddSpacer(self.FromDIP(10))
+        pan_heading = create_text(panel, _locale.get("parameters.pan.label", "FRAME POSITION"), "subheader")
+        sizer.Add(pan_heading, 0, wx.BOTTOM, self.FromDIP(6))
+        for axis, style in zip(PAN_AXES, ("primary", "secondary")):
+            row = self.create_axis_control(
+                panel, axis.replace('_', ' ').upper(), getattr(self.settings, axis, 0.0), "",
+                -MAX_PAN, MAX_PAN, locale_key=f"parameters.pan.{axis[-1]}", id=style, unit="",
+            )
+            sizer.Add(row, 0, wx.EXPAND | wx.BOTTOM, self.FromDIP(4))
+        self._align_axis_labels()
+
         panel.SetSizerAndFit(sizer)
         return panel
 
